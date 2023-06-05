@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<meta name="generator" content="">
+		<title>Watch, Alarm, Timer</title>
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="fonts/audiowide.css" rel="stylesheet">
+		<style>
+			body,html,div,p,span,input { font-family:"Audiowide";background-color:none; }
+			.container { max-width:700px; }
+			.timer input[type=text] { border-color:green;background-color:lightgreen;color:green;font-weight:bold; }
+			.clock { font-size:72px;color:red;line-height:72px; }
+			.date { font-size:32px;color:red;margin-bottom:12px; }
+			.alarm input[type=text] { border-color:blue;background-color:lightblue;color:blue;font-weight:bold;margin-bottom:27px; }
+			.alarm .input-group-text { font-weight:normal;padding:0 10px;width:150px;border-color:blue;background-color:lightblue;color:blue;}
+			.alarm input#lbl { margin-left:-10px;font-weight:normal;padding:0;background:transparent;background-repeat:no-repeat;background-origin:content-box;background-position:left top;background-size:100% 100%;
+				background-image:url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg"><rect fill="lightblue" x="0" y="0" width="700" height="700" /></svg>'); }
+			.clock:hover,.date:hover { cursor:pointer; }
+		</style>
+	</head>
+	<body class="container-fluid">
+		<div class="container">
+			
+			<div class="row justify-content-center clock">
+				<div id="th" class="col text-center"></div>
+				<div class="col text-center"> : </div>
+				<div id="tm" class="col text-center"></div>
+				<div class="col text-center"> : </div>
+				<div id="ts" class="col text-center"></div>
+			</div>
+			
+			<div class="row justify-content-center date">
+				<div class="col-md-12 text-center">---</div>
+			</div>
+			
+			<div class="row justify-content-center alarm">
+				<div class="col-4 text-center">
+					<input id="ah" type="text" class="form-control border-4 text-center" placeholder="HH">
+				</div>
+				<div class="col-4 text-center">
+					<input id="am" type="text" class="form-control border-4 text-center" placeholder="MM">
+				</div>
+				<div class="col-4 text-center">
+					<input id="as" type="text" class="form-control border-4 text-center" placeholder="SS">
+				</div>
+				<div class="col-12 text-center">
+					<div class="input-group">
+						<div class="input-group-prepend"><span class="input-group-text border-4" id="remtime">&nbsp;</span></div>
+						<input id="lbl" type="text" class="form-control border-4 text-center">
+					</div>
+				</div>
+			</div>
+			
+			<div class="row justify-content-center timer">
+				<div class="col-4">
+					<input id="hh" type="text" class="form-control border-4 text-center" placeholder="HH">
+				</div>
+				<div class="col-4">
+					<input id="mm" type="text" class="form-control border-4 text-center" placeholder="MM">
+				</div>
+				<div class="col-4">
+					<input id="ss" type="text" class="form-control border-4 text-center" placeholder="SS">
+				</div>
+			</div>
+		</div>
+		<audio id="alarm-audio"></audio>
+		<script src="js/bootstrap.bundle.min.js"></script>
+		<script src="js/jquery-3.7.0.min.js"></script>
+		<script>
+			var tstop = false; astop = false;
+			var alarmTime = 0;
+			var blinking = true;
+			var color = "";
+			
+			$(document).ready(function(){
+				$("#hh").val("00");
+				$("#mm").val("00");
+				$("#ss").val("00");
+				$("#hh").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} tstop = false;});
+				$("#hh").focus(function () {$(this).select();tstop = true;});
+				$("#mm").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} tstop = false;});
+				$("#mm").focus(function () {$(this).select();tstop = true;});
+				$("#ss").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} tstop = false;});
+				$("#ss").focus(function () {$(this).select();tstop = true;});
+				
+				$("#ah").val("00");
+				$("#am").val("00");
+				$("#as").val("00");
+				$("#lbl").val("");
+				$("#ah").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} astop = false;});
+				$("#ah").focus(function () {$(this).select();astop = true;});
+				$("#am").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} astop = false;});
+				$("#am").focus(function () {$(this).select();astop = true;});
+				$("#as").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} astop = false;});
+				$("#as").focus(function () {$(this).select();astop = true;});
+				$("#lbl").focusout(function () {astop = false;});
+				$("#lbl").focus(function () {$(this).select();astop = true;});
+				
+				$(".clock").on("click", function() {
+					resetForm();
+				});
+				$(".date").on("click", function() {
+					resetForm();
+				});
+				
+				var now = new Date();
+				setTime(now);
+				setDate(now);
+				mainTimer();
+			});
+			
+			function mainTimer() {
+				var c1=0; var c2=0; var c3=0; var c4=0;
+				var timer = setInterval(function() {
+						var now = new Date();
+						setTime(now);
+						c1++;if(c1>=120) {setDate(now);c1=0;}
+						c2++;if(c2>=2) {startTimer(now);c2=0;}
+						c3++;if(c3>=2) {startAlarm(now);c3=0;}
+						if(blinking) {
+							c4++;if(c4>=2) {blinkBackground();c4=0;}
+						}
+					}, 500);
+				}
+			
+			function setTime(now) {
+				var xx = toHoursAndMinutes(now.getHours()*3600+now.getMinutes()*60+now.getSeconds());
+				$("#th").html(xx.h);
+				$("#tm").html(xx.m);
+				$("#ts").html(xx.s);
+			}
+			
+			function setDate(now) {
+				var tag = ["Son.","Mon.","Dien.","Mit.","Don.","Fre.","Sam."];
+				datestr = tag[now.getDay()] + ", " + now.getFullYear() + "-" + ("00"+(now.getMonth()+1)).substr(-2,2) + "-" + ("00"+now.getDate()).substr(-2,2);
+				$(".date").html(datestr);
+			}
+			
+			function checkisvalid(nn) {
+				if(isNaN(nn)) {return false;}
+				if(parseInt(nn)<0 || parseInt(nn)>59) {return false;}
+				return true;
+			}
+			
+			function startTimer(now) {
+				var hh = $("#hh").val();
+				var mm = $("#mm").val();
+				var ss = $("#ss").val();
+				if(hh == "00" && mm == "00" && ss == "00") {
+					// mach nix
+				} else {
+					if(!tstop) {
+						var tt = parseInt(hh)*3600+parseInt(mm)*60+parseInt(ss);
+						if(tt <= 1){
+							playAudio("beep.wav");
+							color = "lightseagreen";
+							blinking = true;
+						}
+						tt = tt - 1;
+						var xx = toHoursAndMinutes(tt);
+						$("#hh").val(xx.h);
+						$("#mm").val(xx.m);
+						$("#ss").val(xx.s);
+					}
+				}
+			}
+			
+			function startAlarm(now) {
+				var hh = $("#ah").val();
+				var mm = $("#am").val();
+				var ss = $("#as").val();
+				var t1; var t2; var t3; var tx;
+				if(hh == "00" && mm == "00" && ss == "00") {
+					alarmTime = 0; // mach nix weiter
+				} else {
+					if(!astop) {
+						t1 = parseInt(hh)*3600+parseInt(mm)*60+parseInt(ss); // Alarmzeit
+						t2 = now.getHours()*3600+now.getMinutes()*60+now.getSeconds(); // aktuelle Zeit
+						if(t1<t2) {$("#ah").val("00");$("#am").val("00");$("#as").val("00");return;} // reset ungültige Eingabe
+						if(t1==t2) {
+							playAudio("alarm.wav");
+							color = "lightsteelblue";
+							blinking = true;
+							$("#ah").val("00");$("#am").val("00");$("#as").val("00");
+							$("#lbl").css("background-size", "100% 100%");
+							$("#remtime").html("00:00:00");
+							return;
+						}
+						if(alarmTime==0){ alarmTime=t2; }
+						t3 = t1-t2; tx = toHoursAndMinutes(t3);
+						$("#remtime").html(tx.h+" : "+tx.m+" : "+tx.s); // Restzeit anzeigen
+						nn = Math.floor( 100*(t3)/(t1-alarmTime) );
+						$("#lbl").css("background-size", String(nn)+"% 100%");
+					} else {
+						alarmTime=0;
+					}
+				}
+			}
+			
+			function toHoursAndMinutes(tsec) {
+				var tmin  = Math.floor(tsec / 60);
+				var ss  = tsec % 60;
+				var hh = Math.floor(tmin / 60);
+				var mm = tmin % 60;
+				var hx = "00"+String(hh); hx = hx.substr(-2, 2);
+				var mx = "00"+String(mm); mx = mx.substr(-2, 2);
+				var sx = "00"+String(ss); sx = sx.substr(-2, 2);
+				return { h: hx, m: mx, s: sx };
+			}
+			
+			function playAudio(audiofile) {
+				var audio = document.getElementById("alarm-audio");
+				audio.src = audiofile;
+				audio.play();
+			}
+			
+			function blinkBackground() {
+				bgcolor = document.body.style.backgroundColor;
+				if(bgcolor==color){ document.body.style.backgroundColor = ""; }
+				else { document.body.style.backgroundColor = color; }
+			}
+			
+			function resetForm() {
+				blinking = false;
+				tstop = false;
+				astop = false;
+				alarmTime = 0;
+				color = "";
+				document.body.style.backgroundColor = "";
+				$("#remtime").html("&nbsp;");
+				$("#lbl").css("background-size", "100% 100%");
+				$("#hh").val("00");
+				$("#mm").val("00");
+				$("#ss").val("00");
+				$("#ah").val("00");
+				$("#am").val("00");
+				$("#as").val("00");
+				$("#lbl").val("");
+			}
+		</script>
+	</body>
+</html>
