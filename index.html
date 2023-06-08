@@ -23,18 +23,18 @@
 		</style>
 	</head>
 	<body class="container-fluid">
+		
 		<div class="container">
-			
-			<div class="row justify-content-center clock">
+			<div class="row justify-content-center clock" data-bs-toggle="modal" data-bs-target="#modalMenu">
 				<div id="th" class="col text-center"></div>
 				<div class="col text-center"> : </div>
 				<div id="tm" class="col text-center"></div>
-				<div class="col text-center"> : </div>
+				<div class="col text-center" style="width:50px"> : </div>
 				<div id="ts" class="col text-center"></div>
 			</div>
 			
-			<div class="row justify-content-center date">
-				<div class="col-md-12 text-center">---</div>
+			<div class="row justify-content-center date" data-bs-toggle="modal" data-bs-target="#modalMenu">
+				<div class="col-12 text-center">---</div>
 			</div>
 			
 			<div class="row justify-content-center alarm">
@@ -67,6 +67,26 @@
 				</div>
 			</div>
 		</div>
+		
+		<!-- Modal -->
+		<div class="modal fade" id="modalMenu" tabindex="-1" aria-labelledby="menuTitle" aria-hidden="true">
+		  <div class="modal-dialog">
+			<div class="modal-content">
+			  <div class="modal-header">
+				<h5 class="modal-title" id="menuTitle">Clock, Alarm, Timer</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			  </div>
+			  <div class="modal-body text-center">
+				<button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="resetalarm">Reset Alarm</button>
+				<button type="button" class="btn btn-success" data-bs-dismiss="modal" id="resettimer">Reset Timer</button>
+				<button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="resetall">Reset All</button>
+				<button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+			  </div>
+			  <div class="modal-footer"></div>
+			</div>
+		  </div>
+		</div>
+		
 		<audio id="alarm-audio"></audio>
 		<script src="js/bootstrap.bundle.min.js"></script>
 		<script src="js/jquery-3.7.0.min.js"></script>
@@ -99,12 +119,15 @@
 				$("#as").focus(function () {$(this).select();astop = true;});
 				$("#lbl").focusout(function () {astop = false;});
 				$("#lbl").focus(function () {$(this).select();astop = true;});
-				
-				$(".clock").on("click", function() {
-					resetForm();
+
+				$("#resetalarm").on("click", function() {
+					resetAlarmForm();
 				});
-				$(".date").on("click", function() {
-					resetForm();
+				$("#resettimer").on("click", function() {
+					resetTimerForm();
+				});
+				$("#resetall").on("click", function() {
+					location.reload();
 				});
 				
 				var now = new Date();
@@ -224,22 +247,26 @@
 				else { document.body.style.backgroundColor = color; }
 			}
 			
-			function resetForm() {
+			function resetAlarmForm() {
 				blinking = false;
-				tstop = false;
 				astop = false;
 				alarmTime = 0;
-				color = "";
 				document.body.style.backgroundColor = "";
 				$("#remtime").html("&nbsp;");
 				$("#lbl").css("background-size", "100% 100%");
-				$("#hh").val("00");
-				$("#mm").val("00");
-				$("#ss").val("00");
 				$("#ah").val("00");
 				$("#am").val("00");
 				$("#as").val("00");
 				$("#lbl").val("");
+			}
+			
+			function resetTimerForm() {
+				blinking = false;
+				tstop = false;
+				document.body.style.backgroundColor = "";
+				$("#hh").val("00");
+				$("#mm").val("00");
+				$("#ss").val("00");
 			}
 		</script>
 	</body>
