@@ -25,7 +25,7 @@
 	<body class="container-fluid">
 		
 		<div class="container">
-			<div class="row justify-content-center clock" data-bs-toggle="modal" data-bs-target="#modalMenu">
+			<div class="row justify-content-center clock" data-bs-toggle="modal" data-bs-target="#modalMenu" title="click for menue">
 				<div id="th" class="col text-center"></div>
 				<div class="col text-center"> : </div>
 				<div id="tm" class="col text-center"></div>
@@ -101,10 +101,13 @@
 				$("#mm").val("00");
 				$("#ss").val("00");
 				$("#hh").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} tstop = false;});
+				$("#hh").on("keydown", function (event) {if(event.which == 13){if(!checkisvalid($(this).val())){$(this).val("00");} tstop = false; $(this).blur();}});
 				$("#hh").focus(function () {$(this).select();tstop = true;});
 				$("#mm").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} tstop = false;});
+				$("#mm").on("keydown", function (event) {if(event.which == 13){if(!checkisvalid($(this).val())){$(this).val("00");} tstop = false; $(this).blur();}});
 				$("#mm").focus(function () {$(this).select();tstop = true;});
 				$("#ss").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} tstop = false;});
+				$("#ss").on("keydown", function (event) {if(event.which == 13){if(!checkisvalid($(this).val())){$(this).val("00");} tstop = false; $(this).blur();}});
 				$("#ss").focus(function () {$(this).select();tstop = true;});
 				
 				$("#ah").val("00");
@@ -112,12 +115,16 @@
 				$("#as").val("00");
 				$("#lbl").val("");
 				$("#ah").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} astop = false;});
+				$("#ah").on("keydown", function (event) {if(event.which == 13){if(!checkisvalid($(this).val())){$(this).val("00");} astop = false; $(this).blur();}});
 				$("#ah").focus(function () {$(this).select();astop = true;});
 				$("#am").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} astop = false;});
+				$("#am").on("keydown", function (event) {if(event.which == 13){if(!checkisvalid($(this).val())){$(this).val("00");} astop = false; $(this).blur();}});
 				$("#am").focus(function () {$(this).select();astop = true;});
 				$("#as").focusout(function () {if(!checkisvalid($(this).val())){$(this).val("00");} astop = false;});
+				$("#as").on("keydown", function (event) {if(event.which == 13){if(!checkisvalid($(this).val())){$(this).val("00");} astop = false; $(this).blur();}});
 				$("#as").focus(function () {$(this).select();astop = true;});
 				$("#lbl").focusout(function () {astop = false;});
+				$("#lbl").on("keydown", function () {if(event.which == 13){astop = false;$(this).blur();}});
 				$("#lbl").focus(function () {$(this).select();astop = true;});
 
 				$("#resetalarm").on("click", function() {
